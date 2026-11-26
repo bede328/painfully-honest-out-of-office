@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 // One brutally honest but still polite out-of-office auto-reply.
 // Chosen for the house judge's criteria, in order: honesty first,
@@ -24,6 +24,15 @@ function main(): void {
   }
   mkdirSync("/output", { recursive: true });
   writeFileSync("/output/entry.txt", reply, "utf8");
+  // Read-back verification: the file must hold exactly the reply,
+  // byte for byte, before the program reports success.
+  const written = readFileSync("/output/entry.txt", "utf8");
+  if (written !== reply) {
+    throw new Error("read-back mismatch");
+  }
+  if (Buffer.byteLength(written, "utf8") !== Buffer.byteLength(reply, "utf8")) {
+    throw new Error("read-back byte-length mismatch");
+  }
 }
 
 main();
